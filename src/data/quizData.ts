@@ -117,8 +117,38 @@ export const quizQuestions: QuizQuestion[] = [
       'O(N²) memory'
     ],
     correctIndex: 2,
-    explanation: 'Because each state depends strictly on the immediate previous two states (i-1 and i-2), we only need to preserve two scalar variables, reducing auxiliary space from O(N) to O(1).',
+    explanation: 'Because each state depends strictly on the immediate previous two states (i-1 and i-2), we only need to preserve two scalar variables, reducing auxiliary space from O(1).',
     topic: 'dynamic-programming',
     pattern: 'Space-Optimized DP'
+  },
+  {
+    id: 'q9',
+    question: 'You are given Q range updates [L, R, val], each adding val to array elements from index L to R. Then you must output the final array of length N. What is the optimal time complexity?',
+    scenario: 'N = 100,000, Q = 100,000. Apply all range updates and return the resulting array.',
+    options: [
+      'O(N * Q) using a standard iterative loop',
+      'O(N + Q) using a Difference Array',
+      'O(Q * log N) using a Hash Map',
+      'O(N log Q) using Binary Search'
+    ],
+    correctIndex: 1,
+    explanation: 'With a Difference Array, each range update adds val at L and subtracts val at R+1 in O(1) time. After processing all Q updates in O(Q) time, computing the prefix sum once in O(N) reconstructs the final array in O(N + Q) overall time.',
+    topic: 'prefix-sums',
+    pattern: 'Difference Array'
+  },
+  {
+    id: 'q10',
+    question: 'Why does standard Breadth-First Search (BFS) fail to find the shortest path in a weighted graph with varied positive edge weights?',
+    scenario: 'Graph has edge A -> B with weight 10, and path A -> C -> B with edge weights 2 and 3.',
+    options: [
+      'BFS cannot handle cycles in graphs',
+      'BFS explores by hop count (edges), ignoring edge costs—so fewer edges might cost more than multiple light edges',
+      'BFS requires an undirected graph to function correctly',
+      'BFS uses exponential stack memory compared to DFS'
+    ],
+    correctIndex: 1,
+    explanation: "Standard BFS assumes all edges have uniform weight 1, finding the path with fewest edge transitions. When edge weights vary, a path with fewer hops can have a much higher total weight (e.g., single hop 10 vs two hops 2+3=5). Dijkstra's Algorithm resolves this by expanding minimum-cost paths first using a Priority Queue in O((V + E) log V).",
+    topic: 'graphs',
+    pattern: "Dijkstra's Shortest Path"
   }
 ];

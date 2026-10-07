@@ -587,26 +587,35 @@ Graphs model networks, dependencies, maps, and grid worlds. Common graph intervi
     keyConcepts: [
       {
         title: 'Adjacency List Construction',
-        explanation: 'Always convert edge lists `[[u, v], ...]` into an adjacency map or list `graph[u].append(v)` in O(V + E) before running graph algorithms.',
+        explanation: 'Always convert edge lists [[u, v], ...] into an adjacency map or list graph[u].append(v) in O(V + E) before running graph algorithms.',
       },
       {
         title: 'BFS for Shortest Path in Unweighted Graphs',
         explanation: 'Because BFS explores nodes in concentric layers outward from the source, the first time you reach the target node is GUARANTEED to be via the shortest number of edges.',
       },
       {
+        title: 'Dijkstra\'s Algorithm for Weighted Graphs',
+        explanation: 'For directed/undirected graphs with non-negative edge weights, Dijkstra uses a Min-Heap (priority queue) to greedily extract the unvisited node with the smallest tentative distance in O((V + E) log V).',
+      },
+      {
         title: 'Topological Sort (Kahn\'s In-Degree Algorithm)',
         explanation: 'Count in-degrees for all vertices. Push all vertices with in-degree 0 into a queue. While queue is non-empty, pop node, append to topo-order, and decrement in-degrees of its neighbors. If neighbor in-degree reaches 0, push it. If processed count < V, a cycle exists!',
       },
       {
-        title: 'Disjoint Set Union (Union-Find)',
-        explanation: 'Tracks partitioning of elements into disjoint sets. With Path Compression and Union by Rank, both `find(x)` and `union(x, y)` run in near-constant amortized O(α(N)) time (inverse Ackermann function).',
+        title: 'Disjoint Set Union (Union-Find / DSU)',
+        explanation: 'Tracks partitioning of elements into disjoint sets. With Path Compression and Union by Rank, both find(x) and union(x, y) run in near-constant amortized O(α(N)) time (inverse Ackermann function). Ideal for connected components and cycle detection.',
+      },
+      {
+        title: 'Bipartite Graphs & 2-Coloring',
+        explanation: 'A graph is bipartite if and only if it has NO odd-length cycles. Attempt to color every node with 2 alternating colors (e.g. 1 and -1); if any adjacent neighbor has the same color, a cycle of odd length exists!',
       }
     ],
     whenToUse: [
       'Grid traversal (islands, mazes, matrix pathfinding)',
-      'Dependency resolution (Course Schedule, build order)',
-      'Network delay, cheapest flight (Dijkstra / Bellman-Ford)',
-      'Detecting cycles or redundant edges in undirected graphs (Union-Find)'
+      'Dependency resolution & prerequisite order (Course Schedule)',
+      'Single-source shortest path in weighted graphs with non-negative weights (Dijkstra)',
+      'Detecting cycles or redundant edges in undirected graphs (Union-Find)',
+      'Testing if a graph can be split into two independent sets (Bipartite 2-Coloring)'
     ],
     templates: [
       {
@@ -635,22 +644,142 @@ def topological_sort(num_courses, prerequisites):
                 
     return order if len(order) == num_courses else []`,
         explanation: 'Kahn\'s algorithm detects cycles while producing valid topological order in O(V + E).'
+      },
+      {
+        name: 'Dijkstra\'s Shortest Path Template',
+        language: 'python',
+        code: `import heapq
+from collections import defaultdict
+
+def dijkstra(n, edges, start_node):
+    graph = defaultdict(list)
+    for u, v, w in edges:
+        graph[u].append((v, w))
+        
+    dist = {i: float('inf') for i in range(1, n + 1)}
+    dist[start_node] = 0
+    min_heap = [(0, start_node)] # (distance, node)
+    
+    while min_heap:
+        d, u = heapq.heappop(min_heap)
+        if d > dist[u]:
+            continue
+            
+        for v, weight in graph[u]:
+            if dist[u] + weight < dist[v]:
+                dist[v] = dist[u] + weight
+                heapq.heappush(min_heap, (dist[v], v))
+                
+    return dist`,
+        explanation: 'Dijkstra finds shortest path in non-negative weighted graphs in O((V + E) log V).'
       }
     ],
     commonMistakes: [
       'Forgetting to mark nodes as visited immediately upon adding to BFS queue, resulting in duplicate queue insertions and exponential blowup.',
-      'Assuming DFS can find shortest paths in unweighted graphs (BFS is required).',
-      'Not checking boundary conditions `0 <= r < rows and 0 <= c < cols` when traversing 4-directional matrix neighbors.'
+      'Using unweighted BFS for weighted graphs (Dijkstra is required).',
+      'Not checking boundary conditions 0 <= r < rows and 0 <= c < cols when traversing 4-directional matrix neighbors.'
     ],
     problemSlugs: [
       'number-of-islands',
-      'clone-graph',
       'course-schedule',
-      'pacific-atlantic-water-flow',
+      'course-schedule-ii',
       'rotting-oranges',
-      'word-ladder',
       'network-delay-time',
-      'redundant-connection'
+      'redundant-connection',
+      'pacific-atlantic-water-flow',
+      'is-graph-bipartite'
+    ]
+  },
+  {
+    slug: 'prefix-sums',
+    title: 'Prefix Sums & Difference Arrays',
+    icon: 'TrendingUp',
+    shortDescription: 'Master 1D/2D cumulative sums, hash map target lookups with negatives, difference arrays for O(1) range updates, and modulo frequencies.',
+    difficultyFocus: 'Core High-Yield Pattern',
+    longOverview: `A Prefix Sum array precalculates the cumulative sum of an iterable from index 0 to i.
+This empowers instant O(1) range sum queries for any interval [L, R] using:
+sum(nums[L...R]) = prefix[R + 1] - prefix[L].
+
+When paired with Hash Maps, prefix sums become the single most powerful tool for solving subarray problems with target sums (e.g. Subarray Sum Equals K), especially when the array contains negative numbers where Sliding Window and Two Pointers completely fail!
+
+Difference Arrays invert this relationship: instead of querying range sums in O(1), a difference array allows updating a continuous range [L, R] += value in exact O(1) time by marking only the boundary endpoints diff[L] += v and diff[R + 1] -= v, followed by a single O(N) sweep to reconstruct the array.`,
+    keyConcepts: [
+      {
+        title: '1D Static Cumulative Range Queries',
+        explanation: 'prefix[i + 1] = prefix[i] + nums[i]. Any contiguous segment sum [L, R] is computed in O(1) via prefix[R + 1] - prefix[L].',
+      },
+      {
+        title: 'Prefix Sum + Hash Map (The Negative Numbers Superpower)',
+        explanation: 'In arrays with negative values, two-pointer sliding windows fail because running sum is not monotonic. Instead, we recognize: sum(j...i) = prefix[i] - prefix[j - 1] = k  ==>  prefix[j - 1] = prefix[i] - k. By storing seen prefix sums in a frequency map, we find all target subarrays in single-pass O(N) time and O(N) space.',
+      },
+      {
+        title: '2D Matrix Inclusion-Exclusion Prefix Sum',
+        explanation: 'For a 2D grid, prefix[r+1][c+1] stores the rectangle sum from (0,0) to (r,c). The query sum for rectangle (r1, c1) to (r2, c2) is evaluated in O(1): prefix[r2+1][c2+1] - prefix[r1][c2+1] - prefix[r2+1][c1] + prefix[r1][c1].',
+      },
+      {
+        title: 'Difference Array (O(1) Range Updates)',
+        explanation: 'To add a value v to range [L, R] across multiple updates: increment diff[L] += v and decrement diff[R + 1] -= v. A single running prefix sum pass reconstructs the final values in O(N) time total.',
+      },
+      {
+        title: 'Modular Prefix Sums (Divisibility by K)',
+        explanation: 'If (prefix[i] - prefix[j]) % k == 0, then prefix[i] % k == prefix[j] % k. Equal remainders identify subarrays summing to a multiple of K. Always normalize negative remainders in C++/Java/JS with ((rem % k) + k) % k.',
+      }
+    ],
+    whenToUse: [
+      'Subarray sum equals K when array contains negative numbers',
+      'Frequent range sum queries on immutable 1D arrays or 2D matrices',
+      'Batch range updates [L, R] += v (use Difference Array)',
+      'Subarray sums divisible by K or multiple of K',
+      'Balancing binary arrays with equal 0s and 1s'
+    ],
+    templates: [
+      {
+        name: 'Prefix Sum + Hash Map Template',
+        language: 'python',
+        code: `def subarray_sum_k(nums, k):
+    count = 0
+    curr_sum = 0
+    prefix_map = {0: 1} # sum -> frequency
+    
+    for num in nums:
+        curr_sum += num
+        if (curr_sum - k) in prefix_map:
+            count += prefix_map[curr_sum - k]
+        prefix_map[curr_sum] = prefix_map.get(curr_sum, 0) + 1
+        
+    return count`,
+        explanation: 'Standard O(N) time and O(N) space template for target sum queries with negatives.'
+      },
+      {
+        name: 'Difference Array Template',
+        language: 'python',
+        code: `def difference_array_updates(n, updates):
+    diff = [0] * (n + 2)
+    # Each update is [L, R, value]
+    for L, R, val in updates:
+        diff[L] += val
+        diff[R + 1] -= val
+        
+    # Reconstruct array in O(N)
+    for i in range(1, n + 1):
+        diff[i] += diff[i - 1]
+        
+    return diff[1:n + 1]`,
+        explanation: 'Processes M range updates in O(M + N) time instead of O(M * N).'
+      }
+    ],
+    commonMistakes: [
+      'Using Sliding Window when array has negative numbers: sliding window requires monotonic sum progression.',
+      'Forgetting initial {0: 1} base case in hash map for subarrays starting at index 0.',
+      'Negative modulo trap: in Java, JS, and C++, (-2) % 5 returns -2, not 3! Always normalize with ((rem % k) + k) % k.'
+    ],
+    problemSlugs: [
+      'subarray-sum-equals-k',
+      'range-sum-query-immutable',
+      'range-sum-query-2d-immutable',
+      'subarray-sums-divisible-by-k',
+      'corporate-flight-bookings',
+      'contiguous-array'
     ]
   },
   {

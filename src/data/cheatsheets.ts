@@ -163,6 +163,21 @@ export const decisionFlowchart = [
     explanation: 'Near-instantaneous O(α(N)) component merges and set checks.'
   },
   {
+    scenario: 'Multiple range sum queries or finding subarrays matching target sum with negative values',
+    solution: 'Prefix Sums with Hash Map',
+    explanation: 'Precompute cumulative running sum. prefix[j] - prefix[i-1] = sum(i..j). For subarray equals k, look up prefix - k in map.'
+  },
+  {
+    scenario: 'Batch range addition/modification queries on an array in O(1) per query',
+    solution: 'Difference Array',
+    explanation: 'Add +val at start index L and -val at index R+1. Reconstruct final array via prefix sum in O(N).'
+  },
+  {
+    scenario: 'Shortest path in weighted graph with non-negative edge weights',
+    solution: "Dijkstra's Algorithm (Priority Queue)",
+    explanation: 'Greedily relax shortest distances using min-heap in O((V + E) log V). Guaranteed optimal for non-negative weights.'
+  },
+  {
     scenario: 'Counting distinct ways, optimizing min/max score with overlapping subproblems',
     solution: 'Dynamic Programming (1D / 2D Memoization or Tabulation)',
     explanation: 'Formulate state recurrence, identify base cases, and optimize space with rolling variables.'
@@ -263,5 +278,47 @@ def bfs_grid(grid, start_r, start_c):
         self.components -= 1
         return True`,
     explanation: 'Runs in amortized O(α(N)) near-constant time. Ideal for Number of Connected Components, Redundant Connection, and Kruskal\'s MST.'
+  },
+  {
+    name: "Dijkstra's Algorithm (Single-Source Shortest Path)",
+    language: 'Python',
+    code: `import heapq
+
+def dijkstra(graph, start, n):
+    # graph: {node: [(neighbor, weight)]}
+    min_dist = {i: float('inf') for i in range(n)}
+    min_dist[start] = 0
+    pq = [(0, start)] # (distance, node)
+    
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > min_dist[u]:
+            continue # Outdated distance entry
+            
+        for v, weight in graph.get(u, []):
+            if min_dist[u] + weight < min_dist[v]:
+                min_dist[v] = min_dist[u] + weight
+                heapq.heappush(pq, (min_dist[v], v))
+                
+    return min_dist`,
+    explanation: 'Guarantees the shortest path in graphs with non-negative weights. Pops each vertex with minimum tentative distance in O((V + E) log V).'
+  },
+  {
+    name: 'Difference Array (Batch Range Updates)',
+    language: 'Python',
+    code: `def apply_range_updates(length, updates):
+    # updates: list of [start, end, inc] (0-indexed inclusive)
+    diff = [0] * (length + 1)
+    for l, r, inc in updates:
+        diff[l] += inc
+        diff[r + 1] -= inc
+        
+    res = [0] * length
+    running = 0
+    for i in range(length):
+        running += diff[i]
+        res[i] = running
+    return res`,
+    explanation: 'Applies any number Q of range addition operations in O(1) time each, rebuilding the final array in O(N) total time.'
   }
 ];

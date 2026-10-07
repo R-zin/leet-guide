@@ -7,6 +7,7 @@ import { linkedListProblems } from './problems/linkedLists';
 import { treeProblems } from './problems/trees';
 import { graphProblems } from './problems/graphs';
 import { dpProblems } from './problems/dp';
+import { prefixSumProblems } from './problems/prefixSums';
 import { moreProblems } from './problems/more';
 
 export const problems: Problem[] = [
@@ -18,6 +19,7 @@ export const problems: Problem[] = [
   ...treeProblems,
   ...graphProblems,
   ...dpProblems,
+  ...prefixSumProblems,
   ...moreProblems,
 ];
 
